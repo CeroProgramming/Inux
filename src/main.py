@@ -7,6 +7,8 @@ from exec import execute
 from argparse import ArgumentParser
 from os.path import isfile
 
+from keyboard import keypress, typing
+
 class NoValidConfig(Exception):
     pass
 
@@ -21,15 +23,19 @@ if not configfp:
 if not isfile(configfp):
     raise NoValidConfig('Passed file "%s" not found..' % (configfp,))
 
+config = ConfigParser()
+config.read(configfp)
 
 async def print_events(device):
     async for event in device.async_read_loop():
-        print(device.path, categorize(event), sep=': ')
-
-
-
-config = ConfigParser()
-config.read(configfp)
+        #print(device.path, categorize(event), sep=': ')
+        if event.code == 0 or event.code == 4:
+            continue
+        print(f'code: {event.code} \nvalue:{event.value}')
+        if event.code == 36 and event.value == 1:
+            typing('Hello World')
+        if event.code == 37:
+            keypress('â', event.value)
 
 keyboards = config['DEFAULT']['keyboards'].split(',')
 devices = list()
@@ -48,7 +54,6 @@ for keyboard in keyboards:
         else:
             element.close()
             del element
-
 
 for device in devices:
     ensure_future(print_events(device))
