@@ -1,9 +1,41 @@
 #!/bin/bash
 
-SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+if ! groups | grep -q input; then
+  echo "You are not in the input group. You may be asked for your password now."
+  if [[ $UID != 0 ]] && [[ $EUID != 0 ]]; then
+    sudo usermod -aG input "$USER"
+  else
+    if [[ "$SUDO_USER" != "" ]]; then
+      usermod -aG input "$SUDO_USER"
+    else
+      usermod -aG input "$USER"
+    fi
+    echo "You need to restart your pc to complete this process! Sorry for that :("
+  fi
+fi
 
-if [ ! -f $SCRIPTPATH/config/config.ini ]; then
+
+echo "Activating python environment and ensuring everything is installed and up to date"
+source venv/bin/activate
+
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
+
+if ! command -v  > /dev/null; then
+  echo "Need to install xinput. You may be asked for a password. If something does not work, restart with sudo."
+  if command -v pacman > /dev/null; then
+    if [[ $UID != 0 ]] && [[ $EUID != 0 ]]; then
+      sudo pacman -S xorg-xinput --noconfirm
+    else
+      pacman -S xorg-xinput --noconfirm
+    fi
+  fi
+fi
+
+SCRIPTPATH="$( cd "$(dirname "$0")" || exit 1 ; pwd -P )"
+
+if [ ! -f "$SCRIPTPATH"/config/config.ini ]; then
 	echo 'Error! Config file does not exist (config/config.ini). Leaving..'
 fi
 
-python3 $SCRIPTPATH/src/main.py --config $SCRIPTPATH/config/config.ini
+python3 "$SCRIPTPATH"/src/main.py --config "$SCRIPTPATH"/config/config.ini
