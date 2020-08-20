@@ -1,38 +1,31 @@
-#!/usr/bin/python3
-
-from asyncio import ensure_future, get_event_loop
+#!venv/bin/python3
 
 from config import Config
 from arguments import Arguments
-from keyboard import Keyboard
-from libs.typing import keypress, typing
+from logging import getLogger, FileHandler, StreamHandler, Formatter, DEBUG
 
+from midi.controller import Controller as MIDIController
+from keyboard.controller import Controller as KeyboardController
+
+logger = getLogger('inux')
+logger.setLevel(DEBUG)
+formatter = Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+file_handler = FileHandler(filename='logs/inux.log', encoding='utf-8', mode='w')
+file_handler.setFormatter(formatter)
+stream_handler = StreamHandler()
+stream_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 args = Arguments()
 
-config = Config(args.get_config_fp())
+try:
+    config = Config(args.get_config_fp(), logger)
 
-
-async def print_events(device):
-    async for event in device.async_read_loop():
-        # print(device.path, categorize(event), sep=': ')
-        if event.code == 0 or event.code == 4:
-            continue
-        print(f'code: {event.code} \nvalue:{event.value}')
-        if event.code == 36 and event.value == 1:
-            typing('Hello World')
-        if event.code == 37:
-            keypress('â', event.value)
-
-keyboards = list()
-
-for name in config.get_keyboards():
-    keyboard = Keyboard(name)
-    if keyboard.is_created():
-        keyboards.append(keyboard)
-
-for keyboard in keyboards:
-    ensure_future(print_events(keyboard))
-
-loop = get_event_loop()
-loop.run_forever()
+    # midi_controller = MIDIController(config, logger)
+    keyboard_controller = KeyboardController(config, logger)
+except KeyboardInterrupt:
+    stream_handler.close()
+    file_handler.close()
+    logger.removeHandler(stream_handler)
+    logger.removeHandler(file_handler)

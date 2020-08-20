@@ -5,7 +5,7 @@ class Arguments(object):
 
     def __init__(self):
         self._parser = ArgumentParser(description='Linux Multiple Keyboard Input Controller')
-        self._parser.add_argument('--config', type=str, help='Pass the config file. Required!')
+        self._parser.add_argument('--config', type=str, required=True, help='Pass the config file.')
         self._args = self._parser.parse_args()
 
     def get_config_fp(self) -> str:

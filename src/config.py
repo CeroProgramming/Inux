@@ -1,8 +1,10 @@
 from configparser import ConfigParser
 from os.path import isfile
-from typing import List
+from typing import List, Tuple
+from logging import Logger
 
-Keyboards = List[str]
+Keyboards = List[Tuple[str, str]]
+MIDIDevices = List[Tuple[str, str]]
 
 
 class NoValidConfig(Exception):
@@ -11,7 +13,7 @@ class NoValidConfig(Exception):
 
 class Config(object):
 
-    def __init__(self, config_fp):
+    def __init__(self, config_fp: str, logger: Logger):
 
         if not config_fp:
             raise NoValidConfig('No config passed. Use flag --config <fp>.')
@@ -20,6 +22,36 @@ class Config(object):
 
         self._config = ConfigParser()
         self._config.read(config_fp)
+        self._logger = logger
 
-    def get_keyboards(self) -> Keyboards:
-        return self._config['DEFAULT']['keyboards'].split(',')
+    @property
+    def keyboards(self) -> Keyboards:
+        keyboards = list()
+        for section in self._config.sections():
+            device_type = self._config[section].get('type')
+            if device_type == 'keyboard':
+                self._logger.info('Found config section for keyboard "%s"' % (section,))
+                script_path = self._config[section].get('script')
+                if script_path:
+                    self._logger.info('Registered keyboard!')
+                    keyboards.append((section, script_path))
+                else:
+                    self._logger.info('Config is missing the "script" attribute')
+                    continue
+        return keyboards
+
+    @property
+    def midi_devices(self) -> MIDIDevices:
+        devices = list()
+        for section in self._config.sections():
+            self._logger.info('Found config section for midi device "%s"' % (section,))
+            device_type = self._config[section].get('type')
+            if device_type == 'midi':
+                script_path = self._config[section].get('script')
+                if script_path:
+                    self._logger.info('Registered midi device!')
+                    devices.append((section, script_path))
+                else:
+                    self._logger.info('Config is missing the "script" attribute')
+                    continue
+        return devices

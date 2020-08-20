@@ -1,5 +1,9 @@
 from evdev import InputDevice, list_devices
-from exec import execute
+
+from logging import Logger
+from importlib import import_module
+
+from libs.exec import execute
 
 # Get the id of the master keyboard to reattach later
 MASTER_KEYBOARD, CODE = execute('xinput list | grep "master keyboard" | awk -F "master keyboard" \'{print $2}\' |\
@@ -11,15 +15,20 @@ if CODE != 0:
 del CODE
 
 
+class KeyboardNotFoundException(Exception):
+    pass
+
+
 class Keyboard(object):
 
-    def __init__(self, name):
+    def __init__(self, name, logger: Logger, script_path: str):
 
         self._name = name
         self._is_created = False
 
         # Searching for the keyboard
         self._id, self._initialization_code = execute("xinput --list --id-only '%s'" % (name,))
+        self._id = self._id.strip()
 
         # Check if keyboard was found
         if self._initialization_code != 0:
@@ -50,6 +59,12 @@ class Keyboard(object):
             print("Keyboard with name '%s' and id %s is not recognised. Skipping.." % (self._name, self._id))
             return
 
+        self._script_path = script_path.replace('/', '.').replace('.py', '')
+        self._script = import_module(self._script_path)
+
+        self._logger = logger
+        self._script.set_logger(logger)
+
         self._is_created = True
 
     def get_name(self) -> str:
@@ -70,6 +85,9 @@ class Keyboard(object):
         global MASTER_KEYBOARD
         if MASTER_KEYBOARD:
             execute("xinput --reattach %s %s" % (self._id, MASTER_KEYBOARD))
+
+    def input_event(self, code: int, value: int):
+        self._script.input_event(code, value)
 
     def async_read_loop(self):
         return self._keyboard.async_read_loop()

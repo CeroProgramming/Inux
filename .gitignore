@@ -1,4 +1,11 @@
 config.ini
+assets/
+scripts/
+!scripts/example*
+!example*
+*.bak
+
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -198,4 +205,3 @@ fabric.properties
 .idea/**/markdown-navigator/
 
 # End of https://www.gitignore.io/api/pycharm
-
