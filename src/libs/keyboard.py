@@ -1,14 +1,16 @@
 from pynput.keyboard import Key, Controller
-from pyperclip import copy
+from pyperclip import copy, paste
 
 keyController = Controller()
 
 
 def type_special_character(key):
+    cache = paste()
     copy(key)
     press(Key.ctrl.value)
     typing('v')
     release(Key.ctrl.value)
+    copy(cache)
 
 
 def press(key):

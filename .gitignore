@@ -1,7 +1,5 @@
 config.ini
 assets/
-scripts/
-!scripts/example*
 !example*
 *.bak
 

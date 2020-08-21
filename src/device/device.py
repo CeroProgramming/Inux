@@ -35,7 +35,7 @@ class Device(object):
             print("Device with name '%s' and id %s not found. Skipping.." % (self._name, self._id))
             return
 
-        # Disable device inputfrom
+        # Disable device input
         _, self._disabling_code = execute("xinput float %s" % (self._id,))
 
         # Check if device was disabled
