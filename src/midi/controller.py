@@ -12,7 +12,11 @@ class Controller(object):
         self._devices = list()
         self._threads = list()
 
-        for name, script_path in config.midi_devices:
+        self._logger = logger
+
+    def run(self):
+
+        for name, script_path in self._config.midi_devices:
             try:
                 device = Device(name, script_path)
                 self._devices.append(device)
@@ -23,5 +27,8 @@ class Controller(object):
                 print('An exception with a midi device occurred: ')
                 print(e)
 
-
-
+    def stop(self):
+        for device in self._devices:
+            device.close()
+        #  No way to gracefully stop threads
+        return

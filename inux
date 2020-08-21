@@ -18,8 +18,9 @@ fi
 echo "Activating python environment and ensuring everything is installed and up to date"
 source venv/bin/activate
 
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
+# TODO Only do this on first execution
+# python3 -m pip install --upgrade pip
+# python3 -m pip install -r requirements.txt
 
 if ! command -v  > /dev/null; then
   echo "Need to install xinput. You may be asked for a password. If something does not work, restart with sudo."
@@ -38,4 +39,4 @@ if [ ! -f "$SCRIPTPATH"/config/config.ini ]; then
 	echo 'Error! Config file does not exist (config/config.ini). Leaving..'
 fi
 
-python3 "$SCRIPTPATH"/src/main.py --config "$SCRIPTPATH"/config/config.ini
+python3 "$SCRIPTPATH"/src/main.py device --config "$SCRIPTPATH"/config/config.ini

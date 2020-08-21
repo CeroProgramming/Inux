@@ -48,7 +48,7 @@ class Device(object):
         if not self._output_id or not self._input_id:
             raise DeviceNotFoundException('No midi device with the name %s found.' % (name,))
 
-    def quit(self):
+    def close(self):
         self._running = False
         sleep(0.02)
         self._input_device.close()
@@ -63,7 +63,8 @@ class Device(object):
                     # process = Process(target=self._module.execute, args=(self.quit, self._output_device, event[0][0], event[0][1], event[0][2], event[0][3]))
                     # process.daemon = True
                     # process.start()
-                    self._module.execute(self.quit, self._settings, event[0][0], event[0][1], event[0][2], event[0][3])
+
+                    self._module.execute(self.close, self._settings, event[0][0], event[0][1], event[0][2], event[0][3])
             sleep(0.01)
 
     @staticmethod
