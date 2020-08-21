@@ -25,20 +25,20 @@ class Config(object):
         self._logger = logger
 
     @property
-    def keyboards(self) -> Keyboards:
-        keyboards = list()
+    def devices(self) -> Keyboards:
+        devices = list()
         for section in self._config.sections():
             device_type = self._config[section].get('type')
-            if device_type == 'keyboard':
-                self._logger.info('Found config section for keyboard "%s"' % (section,))
+            if device_type == 'device':
+                self._logger.info('Found config section for device "%s"' % (section,))
                 script_path = self._config[section].get('script')
                 if script_path:
-                    self._logger.info('Registered keyboard!')
-                    keyboards.append((section, script_path))
+                    self._logger.info('Registered device!')
+                    devices.append((section, script_path))
                 else:
                     self._logger.info('Config is missing the "script" attribute')
                     continue
-        return keyboards
+        return devices
 
     @property
     def midi_devices(self) -> MIDIDevices:
